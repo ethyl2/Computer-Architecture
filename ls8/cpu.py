@@ -9,7 +9,8 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0b00000000] * 8
-        self.reg[-1] = 0b11110100  # sets SP to F4
+        # sets SP to F4 # maybe move to a helper method
+        self.reg[-1] = 0b11110100
         self.ram = [0b00000000] * 256
         self.pc = 0b00000000
         self.ir = 0b00000000
@@ -35,6 +36,17 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+
+    def ram_read(mar):
+        # mar <- the address that is being read
+        # return mdr <- the data that was read
+        return self.ram[mar]
+
+    def ram_write(mdr, mar):
+        # mdr <- the data to write
+        # mar <- the address that is being written to
+        self.ram[mar] = mdr
+        # no return, I guess?
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
