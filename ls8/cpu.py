@@ -8,13 +8,17 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.reg = [0b00000000] * 8
+        self.reg = [0] * 8
         # sets SP to F4 # maybe move to a helper method
         self.reg[-1] = 0b11110100
-        self.ram = [0b00000000] * 256
-        self.pc = 0b00000000
+        self.ram = [0] * 256
+        self.pc = 0
         # self.ir = 0b00000000 # maybe just have this as local var in run()
         self.fl = 0b00000000
+        self.ops = {}  # what is the best way to do this??
+        self.ops[0b10000010] = 'LDI'
+        self.ops[0b01000111] = 'PRN'
+        self.ops[0b00000001] = 'HLT'
 
     def load(self):
         """Load a program into memory."""
@@ -84,7 +88,7 @@ class CPU:
         while running:
             # Read the memory address stored in register PC and store result in IR (Instruction Register)
             ir = self.ram[self.pc]
-
+            ir_op = self.ops[ir]
             # Read the bytes at PC+1 and PC+2 in case the instruction needs them
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
@@ -92,11 +96,11 @@ class CPU:
             self.trace()
 
             # Perform the actions needed for the instruction
-            if ir == 0b10000010:  # LDI
+            if ir_op == 'LDI':  # LDI
                 self.reg[operand_a] = operand_b
                 self.pc += 3
-            elif ir == 0b01000111:  # PRN
+            elif ir_op == 'PRN':  # PRN
                 print(self.reg[operand_a])
                 self.pc += 2
-            elif ir == 0b00000001:  # HLT
+            elif ir_op == 'HLT':  # HLT
                 running = False
