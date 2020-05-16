@@ -13,7 +13,7 @@ class CPU:
         self.reg[-1] = 0b11110100
         self.ram = [0b00000000] * 256
         self.pc = 0b00000000
-        self.ir = 0b00000000
+        # self.ir = 0b00000000 # maybe just have this as local var in run()
         self.fl = 0b00000000
 
     def load(self):
@@ -37,12 +37,12 @@ class CPU:
             self.ram[address] = instruction
             address += 1
 
-    def ram_read(mar):
+    def ram_read(self, mar):
         # mar <- the address that is being read
         # return mdr <- the data that was read
         return self.ram[mar]
 
-    def ram_write(mdr, mar):
+    def ram_write(self, mdr, mar):
         # mdr <- the data to write
         # mar <- the address that is being written to
         self.ram[mar] = mdr
@@ -79,4 +79,24 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+
+        while running:
+            # Read the memory address stored in register PC and store result in IR (Instruction Register)
+            ir = self.ram[self.pc]
+
+            # Read the bytes at PC+1 and PC+2 in case the instruction needs them
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            self.trace()
+
+            # Perform the actions needed for the instruction
+            if ir == 0b10000010:  # LDI
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+            elif ir == 0b01000111:  # PRN
+                print(self.reg[operand_a])
+                self.pc += 2
+            elif ir == 0b00000001:  # HLT
+                running = False
