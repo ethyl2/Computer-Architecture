@@ -6,6 +6,8 @@ LDI = 0b10000010
 PRN = 0b01000111
 HLT = 0b00000001
 MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
 
 
 class CPU:
@@ -31,6 +33,8 @@ class CPU:
         self.ops[PRN] = self.handle_PRN
         self.ops[HLT] = self.handle_HLT
         self.ops[MUL] = self.handle_MUL
+        self.ops[PUSH] = self.handle_PUSH
+        self.ops[POP] = self.handle_POP
 
     def load(self):
         """Load a program into memory."""
@@ -136,6 +140,24 @@ class CPU:
 
     def handle_HLT(self, operand_a, operand_b):
         sys.exit(0)
+
+    def handle_PUSH(self, operand_a, operand_b):
+        # given register (mar) <- operand_a
+        # Decrement the SP
+        self.reg[-1] -= 1
+        # Copy the value in the given register to the address pointed to by SP
+        # self.ram[self.reg[-1]] = self.reg[operand_a]
+        self.ram_write(self.reg[operand_a], self.reg[-1])
+        self.pc += 2
+
+    def handle_POP(self, operand_a, operand_b):
+        # given register (mar) <- operand_a
+        # Copy the value from the address pointed to by SP to the given register.
+        # self.reg[operand_a] = self.ram[self.reg[-1]]
+        self.reg[operand_a] = self.ram_read(self.reg[-1])
+        # Increment SP
+        self.reg[-1] += 1
+        self.pc += 2
 
     def run(self):
         """Run the CPU."""
