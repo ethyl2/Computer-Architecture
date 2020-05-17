@@ -2,10 +2,10 @@
 import os
 import sys
 
-LDI = 'LDI'
-PRN = 'PRN'
-HLT = 'HLT'
-MUL = 'MUL'
+LDI = 0b10000010
+PRN = 0b01000111
+HLT = 0b00000001
+MUL = 0b10100010
 
 
 class CPU:
@@ -14,17 +14,23 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0] * 8
-        # sets SP to F4 # maybe move to a helper method
-        self.reg[-1] = 0b11110100
+        # sets SP (stack pointer) to the value F4 # maybe move to a helper method
+        self.reg[-1] = 0b11110100  # 0xf4
         self.ram = [0] * 256
         self.pc = 0
         # self.ir = 0b00000000 # maybe just have this as local var in run()
         self.fl = 0b00000000
-        self.ops = {}  # what is the best way to do this??
+        self.ops = {}
+        '''
         self.ops[0b10000010] = LDI
         self.ops[0b01000111] = PRN
         self.ops[0b00000001] = HLT
         self.ops[0b10100010] = MUL
+        '''
+        self.ops[LDI] = self.handle_LDI
+        self.ops[PRN] = self.handle_PRN
+        self.ops[HLT] = self.handle_HLT
+        self.ops[MUL] = self.handle_MUL
 
     def load(self):
         """Load a program into memory."""
@@ -116,6 +122,21 @@ class CPU:
         print()
     '''
 
+    def handle_LDI(self, operand_a, operand_b):
+        self.reg[operand_a] = operand_b
+        self.pc += 3
+
+    def handle_PRN(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+        self.pc += 2
+
+    def handle_MUL(self, operand_a, operand_b):
+        self.alu('MUL', operand_a, operand_b)
+        self.pc += 3
+
+    def handle_HLT(self, operand_a, operand_b):
+        sys.exit(0)
+
     def run(self):
         """Run the CPU."""
         # running = True
@@ -132,6 +153,8 @@ class CPU:
             # self.trace()
 
             # Perform the actions needed for the instruction
+            ir_op(operand_a, operand_b)
+            '''
             if ir_op == LDI:
                 self.reg[operand_a] = operand_b
                 self.pc += 3
@@ -144,3 +167,4 @@ class CPU:
             elif ir_op == HLT:
                 # running = False
                 sys.exit(0)
+            '''
