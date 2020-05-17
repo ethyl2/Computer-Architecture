@@ -118,7 +118,7 @@ class CPU:
         # while running:
         while True:
             # Read the memory address stored in register PC and store result in IR (Instruction Register)
-            ir = self.ram[self.pc]
+            ir = self.ram_read(self.pc)
             ir_op = self.ops[ir]
             # Read the bytes at PC+1 and PC+2 in case the instruction needs them
             operand_a = self.ram_read(self.pc + 1)
