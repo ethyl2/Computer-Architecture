@@ -55,6 +55,11 @@ class CPU:
                 0b00000000,
                 0b00000001,  # HLT
             ]
+            '''
+            # Use the following if you want to print an error message and exit instead:
+            print("Error: Filename of program to run is needed")
+            sys.exit(1)
+            '''
 
         address = 0
 
