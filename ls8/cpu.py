@@ -77,10 +77,16 @@ class CPU:
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
+            # self.reg[reg_a] += self.reg[reg_b]
+            total = self.reg[reg_a] + self.reg[reg_b]
+            # To keep register within range 0-255
+            self.reg[reg_a] = total & 0xFF
         # elif op == "SUB": etc
         elif op == 'MUL':
-            self.reg[reg_a] *= self.reg[reg_b]
+            product = self.reg[reg_a] * self.reg[reg_b]
+            # To keep register within range 0-255
+            self.reg[reg_a] = product & 0xFF
+            # self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
     '''
