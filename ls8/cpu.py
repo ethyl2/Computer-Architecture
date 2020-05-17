@@ -2,6 +2,11 @@
 import os
 import sys
 
+LDI = 'LDI'
+PRN = 'PRN'
+HLT = 'HLT'
+MUL = 'MUL'
+
 
 class CPU:
     """Main CPU class."""
@@ -16,9 +21,10 @@ class CPU:
         # self.ir = 0b00000000 # maybe just have this as local var in run()
         self.fl = 0b00000000
         self.ops = {}  # what is the best way to do this??
-        self.ops[0b10000010] = 'LDI'
-        self.ops[0b01000111] = 'PRN'
-        self.ops[0b00000001] = 'HLT'
+        self.ops[0b10000010] = LDI
+        self.ops[0b01000111] = PRN
+        self.ops[0b00000001] = HLT
+        self.ops[0b10100010] = MUL
 
     def load(self):
         """Load a program into memory."""
@@ -73,6 +79,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         # elif op == "SUB": etc
+        elif op == 'MUL':
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
     '''
@@ -112,11 +120,14 @@ class CPU:
             # self.trace()
 
             # Perform the actions needed for the instruction
-            if ir_op == 'LDI':
+            if ir_op == LDI:
                 self.reg[operand_a] = operand_b
                 self.pc += 3
-            elif ir_op == 'PRN':
+            elif ir_op == PRN:
                 print(self.reg[operand_a])
                 self.pc += 2
-            elif ir_op == 'HLT':
+            elif ir_op == MUL:
+                self.alu('MUL', operand_a, operand_b)
+                self.pc += 3
+            elif ir_op == HLT:
                 running = False
