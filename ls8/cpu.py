@@ -1,5 +1,5 @@
 """CPU functionality."""
-
+import os
 import sys
 
 
@@ -22,20 +22,35 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
+        program = []
+
+        # If a file is specified as the argument, load that file
+        if len(sys.argv) > 1:
+            file_to_load = sys.argv[1]
+
+            with open(os.path.join(sys.path[0], file_to_load), 'r') as f:
+                instructions = f.read()
+
+            separated = instructions.split()
+
+            for item in separated:
+                if item[0] == '0' or item[0] == '1':
+                    program.append(int(item, 2))
+
+        else:
+            # If not argument, use hard-coded program:
+
+            program = [
+                # From print8.ls8
+                0b10000010,  # LDI R0,8
+                0b00000000,
+                0b00001000,
+                0b01000111,  # PRN R0
+                0b00000000,
+                0b00000001,  # HLT
+            ]
 
         address = 0
-
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
 
         for instruction in program:
             self.ram[address] = instruction
@@ -60,7 +75,7 @@ class CPU:
         # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
-
+    '''
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
@@ -80,6 +95,7 @@ class CPU:
             print(" %02X" % self.reg[i], end='')
 
         print()
+    '''
 
     def run(self):
         """Run the CPU."""
@@ -93,14 +109,14 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            self.trace()
+            # self.trace()
 
             # Perform the actions needed for the instruction
-            if ir_op == 'LDI':  # LDI
+            if ir_op == 'LDI':
                 self.reg[operand_a] = operand_b
                 self.pc += 3
-            elif ir_op == 'PRN':  # PRN
+            elif ir_op == 'PRN':
                 print(self.reg[operand_a])
                 self.pc += 2
-            elif ir_op == 'HLT':  # HLT
+            elif ir_op == 'HLT':
                 running = False
