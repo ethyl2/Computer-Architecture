@@ -113,9 +113,10 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        running = True
+        # running = True
 
-        while running:
+        # while running:
+        while True:
             # Read the memory address stored in register PC and store result in IR (Instruction Register)
             ir = self.ram[self.pc]
             ir_op = self.ops[ir]
@@ -136,4 +137,5 @@ class CPU:
                 self.alu('MUL', operand_a, operand_b)
                 self.pc += 3
             elif ir_op == HLT:
-                running = False
+                # running = False
+                sys.exit(0)
