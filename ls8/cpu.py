@@ -96,20 +96,20 @@ class CPU:
         self.ram[mar] = mdr
         # no return, I guess?
 
-    def alu(self, op, reg_a, reg_b):
+    def alu(self, op, register_a, register_b):
         """ALU operations."""
 
         if op == "ADD":
-            # self.reg[reg_a] += self.reg[reg_b]
-            total = self.reg[reg_a] + self.reg[reg_b]
+            # self.reg[register_a] += self.reg[register_b]
+            total = self.reg[register_a] + self.reg[register_b]
             # To keep register within range 0-255
-            self.reg[reg_a] = total & 0xFF
+            self.reg[register_a] = total & 0xFF
         # elif op == "SUB": etc
         elif op == 'MUL':
-            product = self.reg[reg_a] * self.reg[reg_b]
+            product = self.reg[register_a] * self.reg[register_b]
             # To keep register within range 0-255
-            self.reg[reg_a] = product & 0xFF
-            # self.reg[reg_a] *= self.reg[reg_b]
+            self.reg[register_a] = product & 0xFF
+            # self.reg[register_a] *= self.reg[register_b]
         else:
             raise Exception("Unsupported ALU operation")
     '''
@@ -134,86 +134,89 @@ class CPU:
         print()
     '''
 
-    def handle_LDI(self, operand_a, operand_b):
-        self.reg[operand_a] = operand_b
+    def handle_LDI(self, register, immediate):
+        # Set the value of the specified register to be the given value (immediate)
+        self.reg[register] = immediate
         self.pc += 3
 
-    def handle_PRN(self, operand_a):
-        print(self.reg[operand_a])
+    def handle_PRN(self, register):
+        # Print to the console the decimal integer value that is stored in the given register.
+        print(self.reg[register])
         self.pc += 2
 
-    def handle_MUL(self, operand_a, operand_b):
-        self.alu('MUL', operand_a, operand_b)
+    def handle_MUL(self, register_a, register_b):
+        # In ALU, multiply the values in two registers together and store the result in register_a.
+        self.alu('MUL', register_a, register_b)
         self.pc += 3
 
-    def handle_ADD(self, operand_a, operand_b):
-        self.alu('ADD', operand_a, operand_b)
+    def handle_ADD(self, register_a, register_b):
+        # In ALU, add the values in two registers and store the result in register_a.
+        self.alu('ADD', register_a, register_b)
         self.pc += 3
 
     def handle_HLT(self):
+        # Halt the CPU (and exit the emulator).
         sys.exit(0)
 
-    def handle_PUSH(self, operand_a):
-        # given register (mar) <- operand_a
-        # Decrement the SP
+    def handle_PUSH(self, register):
+        # Push the value in the given register on the stack.
+
+        # Decrement the SP (stack pointer)
         self.reg[-1] -= 1
+
         # Copy the value in the given register to the address pointed to by SP
-        # self.ram[self.reg[-1]] = self.reg[operand_a]
-        self.ram_write(self.reg[operand_a], self.reg[-1])
+        # self.ram[self.reg[-1]] = self.reg[register]
+        self.ram_write(self.reg[register], self.reg[-1])
         self.pc += 2
 
-    def handle_POP(self, operand_a):
-        # given register (mar) <- operand_a
+    def handle_POP(self, register):
+        # Pop the value at the top of the stack into the given register.
+
         # Copy the value from the address pointed to by SP to the given register.
-        # self.reg[operand_a] = self.ram[self.reg[-1]]
-        self.reg[operand_a] = self.ram_read(self.reg[-1])
-        # Increment SP
+        # self.reg[register] = self.ram[self.reg[-1]]
+        self.reg[register] = self.ram_read(self.reg[-1])
+
+        # Increment SP (stack pointer)
         self.reg[-1] += 1
         self.pc += 2
 
     def handle_RET(self):
+        # Return from subroutine.
         # Pop the value from the top of the stack and store it in the PC.
         self.pc = self.ram_read(self.reg[-1])
 
-    def handle_CALL(self, operand_a):
-        # given register <- operand_a
+    def handle_CALL(self, register):
+        # Call a subroutine (function) at the address stored in the register.
+
         # Push the address of the instruction directly after CALL onto the stack.
         self.reg[-1] += 1
         # self.ram[self.reg[-1]] = pc + 2
         self.ram_write(self.pc + 2, self.reg[-1])
 
         # Set the PC to the address stored in the given register.
-        self.pc = self.reg[operand_a]
+        self.pc = self.reg[register]
 
     def handle_ST(self, operand_a, operand_b):
-        # address to store value in <- operand_a
-        # register containing value to be stored <- operand_b
+        # Store value in register_b in the address stored in register_a.
 
-        # Store value in 2nd register in address stored in 1st register.
-        # self.ram[self.reg[operand_a]] = self.reg[operand_b]
-        self.ram_write(self, self.reg[operand_b], self.reg[operand_a])
+        # self.ram[self.reg[register_a]] = self.reg[register_b]
+        self.ram_write(self, self.reg[register_b], self.reg[register_a])
 
     def run(self):
         """Run the CPU."""
-        # running = True
 
-        # while running:
         while True:
             # Read the memory address stored in register PC and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
             ir_op = self.ops[ir]
-            # Read the bytes at PC+1 and PC+2 in case the instruction needs them
-            # operand_a = self.ram_read(self.pc + 1)
-            # operand_b = self.ram_read(self.pc + 2)
 
-            # self.trace()
-
-            # Check to see which operands are needed for the instruction
+            # Check to see which operands are needed for the instruction.
             # print('{0:08b}'.format(ir))
             num_operands = int('{0:08b}'.format(ir)[:2], 2)
             # print("Num operands: " + str(num_operands))
 
-            # Perform the actions needed for the instruction
+            # Read the bytes at PC+1 and PC+2 if the instruction needs them.
+            # Perform the actions needed for the instruction.
 
             if num_operands == 2:
                 operand_a = self.ram_read(self.pc + 1)
@@ -225,7 +228,6 @@ class CPU:
             else:
                 ir_op()
 
-            # ir_op(operand_a, operand_b)
             '''
             if ir_op == LDI:
                 self.reg[operand_a] = operand_b
