@@ -10,6 +10,7 @@ PUSH = 0b01000101
 POP = 0b01000110
 ADD = 0b10100000
 RET = 0b00010001
+CALL = 0b01010000
 
 
 class CPU:
@@ -39,6 +40,7 @@ class CPU:
         self.ops[POP] = self.handle_POP
         self.ops[ADD] = self.handle_ADD
         self.ops[RET] = self.handle_RET
+        self.ops[CALL] = self.handle_CALL
 
     def load(self):
         """Load a program into memory."""
@@ -170,8 +172,16 @@ class CPU:
     def handle_RET(self, operand_a, operand_b):
         # Pop the value from the top of the stack and store it in the PC.
         self.pc = self.ram_read(self.reg[-1])
-        # Do I need to increment the SP??
-        # self.reg[-1] += 1
+
+    def handle_CALL(self, operand_a, operand_b):
+        # given register <- operand_a
+        # Push the address of the instruction directly after CALL onto the stack.
+        self.reg[-1] += 1
+        # self.ram[self.reg[-1]] = pc + 2
+        self.ram_write(self.pc + 2, self.reg[-1])
+
+        # Set the PC to the address stored in the given register.
+        self.pc = self.reg[operand_a]
 
     def run(self):
         """Run the CPU."""
