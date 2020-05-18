@@ -132,22 +132,18 @@ class CPU:
     def handle_LDI(self, register, immediate):
         # Set the value of the specified register to be the given value (immediate)
         self.reg[register] = immediate
-        self.pc += 3
 
     def handle_PRN(self, register):
         # Print to the console the decimal integer value that is stored in the given register.
         print(self.reg[register])
-        self.pc += 2
 
     def handle_MUL(self, register_a, register_b):
         # In ALU, multiply the values in two registers together and store the result in register_a.
         self.alu('MUL', register_a, register_b)
-        self.pc += 3
 
     def handle_ADD(self, register_a, register_b):
         # In ALU, add the values in two registers and store the result in register_a.
         self.alu('ADD', register_a, register_b)
-        self.pc += 3
 
     def handle_HLT(self):
         # Halt the CPU (and exit the emulator).
@@ -162,7 +158,6 @@ class CPU:
         # Copy the value in the given register to the address pointed to by SP
         # self.ram[self.reg[-1]] = self.reg[register]
         self.ram_write(self.reg[register], self.reg[-1])
-        self.pc += 2
 
     def handle_POP(self, register):
         # Pop the value at the top of the stack into the given register.
@@ -173,7 +168,6 @@ class CPU:
 
         # Increment SP (stack pointer)
         self.reg[-1] += 1
-        self.pc += 2
 
     def handle_RET(self):
         # Return from subroutine.
@@ -201,7 +195,7 @@ class CPU:
         """Run the CPU."""
 
         while True:
-            # Read the memory address stored in register PC and store result in IR (Instruction Register)
+            # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
             ir_op = self.ops[ir]
 
@@ -210,6 +204,9 @@ class CPU:
             num_operands = int('{0:08b}'.format(ir)[:2], 2)
             # print("Num operands: " + str(num_operands))
 
+            # Check to see if the instruction handler sets the PC directly.
+            sets_pc = int('{0:08b}'.format(ir)[3])
+
             # Read the bytes at PC+1 and PC+2 if the instruction needs them.
             # Perform the actions needed for the instruction.
 
@@ -217,8 +214,14 @@ class CPU:
                 operand_a = self.ram_read(self.pc + 1)
                 operand_b = self.ram_read(self.pc + 2)
                 ir_op(operand_a, operand_b)
+                if not sets_pc:
+                    self.pc += 3
             elif num_operands == 1:
                 operand_a = self.ram_read(self.pc + 1)
                 ir_op(operand_a)
+                if not sets_pc:
+                    self.pc += 2
             else:
                 ir_op()
+                if not sets_pc:
+                    self.pc += 1
