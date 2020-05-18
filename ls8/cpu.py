@@ -27,12 +27,7 @@ class CPU:
         # self.ir = 0b00000000 # maybe just have this as local var in run()
         self.fl = 0b00000000
         self.ops = {}
-        '''
-        self.ops[0b10000010] = LDI
-        self.ops[0b01000111] = PRN
-        self.ops[0b00000001] = HLT
-        self.ops[0b10100010] = MUL
-        '''
+
         self.ops[LDI] = self.handle_LDI
         self.ops[PRN] = self.handle_PRN
         self.ops[HLT] = self.handle_HLT
@@ -227,18 +222,3 @@ class CPU:
                 ir_op(operand_a)
             else:
                 ir_op()
-
-            '''
-            if ir_op == LDI:
-                self.reg[operand_a] = operand_b
-                self.pc += 3
-            elif ir_op == PRN:
-                print(self.reg[operand_a])
-                self.pc += 2
-            elif ir_op == MUL:
-                self.alu('MUL', operand_a, operand_b)
-                self.pc += 3
-            elif ir_op == HLT:
-                # running = False
-                sys.exit(0)
-            '''
