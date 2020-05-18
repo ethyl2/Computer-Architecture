@@ -1,6 +1,7 @@
 """CPU functionality."""
 import os
 import sys
+import time
 
 LDI = 0b10000010
 PRN = 0b01000111
@@ -13,6 +14,7 @@ RET = 0b00010001
 CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
+PRA = 0b01001000
 
 
 class CPU:
@@ -40,6 +42,9 @@ class CPU:
         self.ops[CALL] = self.handle_CALL
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
+        self.ops[PRA] = self.handle_PRA
+
+        self.start_time = time.time()
 
     def load(self):
         """Load a program into memory."""
@@ -143,6 +148,10 @@ class CPU:
         # Print to the console the decimal integer value that is stored in the given register.
         print(self.reg[register])
 
+    def handle_PRA(self, register):
+        # Print to the console the ASCII character corresponding to the value in the given register.
+        print(chr(self.reg[register]))
+
     def handle_MUL(self, register_a, register_b):
         # In ALU, multiply the values in two registers together and store the result in register_a.
         self.alu('MUL', register_a, register_b)
@@ -207,6 +216,12 @@ class CPU:
         """Run the CPU."""
 
         while True:
+            # Check to see if one second has elapsed
+            current_time = time.time()
+            # print("Time difference: " + str(current_time - self.start_time))
+            if current_time - self.start_time > 1:
+                print("Time to fire the timer interrupt")
+
             # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
 
