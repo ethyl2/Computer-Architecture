@@ -1,0 +1,12 @@
+# Shouldn't print the number 8
+# Because has unknown instruction at line 9
+
+# This comment and blank line is here to make sure
+# they are handled correctly by the file reading code.
+
+10000010 # LDI R0,8
+00000000
+00001000
+110110111 # Not PRN R0
+00000000
+00000001 # HLT
