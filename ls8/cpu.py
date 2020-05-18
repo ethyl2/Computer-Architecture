@@ -9,6 +9,7 @@ MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
 ADD = 0b10100000
+RET = 0b00010001
 
 
 class CPU:
@@ -37,6 +38,7 @@ class CPU:
         self.ops[PUSH] = self.handle_PUSH
         self.ops[POP] = self.handle_POP
         self.ops[ADD] = self.handle_ADD
+        self.ops[RET] = self.handle_RET
 
     def load(self):
         """Load a program into memory."""
@@ -164,6 +166,12 @@ class CPU:
         # Increment SP
         self.reg[-1] += 1
         self.pc += 2
+
+    def handle_RET(self, operand_a, operand_b):
+        # Pop the value from the top of the stack and store it in the PC.
+        self.pc = self.ram_read(self.reg[-1])
+        # Do I need to increment the SP??
+        # self.reg[-1] += 1
 
     def run(self):
         """Run the CPU."""
