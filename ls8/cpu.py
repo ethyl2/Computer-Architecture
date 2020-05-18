@@ -15,6 +15,7 @@ CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
 PRA = 0b01001000
+IRET = 0b00010011
 
 
 class CPU:
@@ -27,7 +28,6 @@ class CPU:
         self.reg[-1] = 0b11110100  # 0xf4
         self.ram = [0] * 256
         self.pc = 0
-        # self.ir = 0b00000000 # maybe just have this as local var in run()
         self.fl = 0b00000000
         self.ops = {}
 
@@ -43,6 +43,7 @@ class CPU:
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
         self.ops[PRA] = self.handle_PRA
+        self.ops[IRET] = self.handle_IRET
 
         self.start_time = time.time()
 
@@ -204,13 +205,29 @@ class CPU:
         # Store value in register_b in the address stored in register_a.
 
         # self.ram[self.reg[register_a]] = self.reg[register_b]
-        self.ram_write(self, self.reg[register_b], self.reg[register_a])
+        self.ram_write(self.reg[register_b], self.reg[register_a])
 
     def handle_JMP(self, register):
         # Jump to the address stored in the given register
 
         # Set the PC to the address stored in the given register.
         self.pc = self.reg[register]
+
+    def handle_IRET(self):
+        # Return from an interupt handler.
+
+        # Pop off R6-R0 from the stack in that order.
+        for i in range(6, -1, -1):
+            self.handle_POP(i)
+
+        # Pop off the FL register from the stack.
+        self.handle_POP(self.fl)
+
+        # Pop off the return address from the stack and store it in PC
+        self.handle_POP(self.pc)
+
+        # Re-enable interrupts
+        self.reg[5] = 1
 
     def run(self):
         """Run the CPU."""
@@ -221,6 +238,40 @@ class CPU:
             # print("Time difference: " + str(current_time - self.start_time))
             if current_time - self.start_time > 1:
                 print("Time to fire the timer interrupt")
+
+                # Set bit #0 in IS (AKA R6, self.reg[6], Interrupt Status)
+                # Later, to handle multiple interrupts, modify this:
+                self.reg[6] = 1
+
+                # Check to see if interrupts are enabled by looking at value of IM (AKA R5, self.reg[5], Interrupt Mask)
+                interrupts_enabled = self.reg[5] > 0
+
+                # If interrupts are enabled, bitwise-AND the IM with IS.
+                if interrupts_enabled:
+                    masked_interrupts = self.reg[5] & self.reg[6]
+
+                    # Step through each bit of masked_interrupts and see which interrupts are set.
+                    for i in range(8):
+                        # Right shift interrupts down by i, then mask with 1 to see if that bit was set
+                        interrupt_happened = (
+                            (masked_interrupts >> i) & 1) == 1
+
+                        if interrupt_happened:
+                            # Disable further interrupts
+                            self.reg[5] = 0
+                            # Clear the bit in the IS register
+                            self.reg[6] = 0
+                            # Push the PC register on the stack.
+                            self.handle_PUSH(self.pc)
+                            # Push the FL register on the stack.
+                            self.handle_PUSH(self.fl)
+                            # Push RO-R6 on the stack
+                            for i in range(6):
+                                self.handle_PUSH(self.reg[i])
+                            # Look up the address of the appropriate handler from the interrupt vector table.
+                            # And set the PC to the handler address
+                            # self.pc = self.ram[248] # F8, the first slot of the interrupt vector table
+                            self.pc = self.ram_read(248)
 
             # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
