@@ -12,6 +12,7 @@ ADD = 0b10100000
 RET = 0b00010001
 CALL = 0b01010000
 ST = 0b10000100
+JMP = 0b01010100
 
 
 class CPU:
@@ -38,6 +39,7 @@ class CPU:
         self.ops[RET] = self.handle_RET
         self.ops[CALL] = self.handle_CALL
         self.ops[ST] = self.handle_ST
+        self.ops[JMP] = self.handle_JMP
 
     def load(self):
         """Load a program into memory."""
@@ -189,11 +191,17 @@ class CPU:
         # Set the PC to the address stored in the given register.
         self.pc = self.reg[register]
 
-    def handle_ST(self, operand_a, operand_b):
+    def handle_ST(self, register_a, register_b):
         # Store value in register_b in the address stored in register_a.
 
         # self.ram[self.reg[register_a]] = self.reg[register_b]
         self.ram_write(self, self.reg[register_b], self.reg[register_a])
+
+    def handle_JMP(self, register):
+        # Jump to the address stored in the given register
+
+        # Set the PC to the address stored in the given register.
+        self.pc = self.reg[register]
 
     def run(self):
         """Run the CPU."""
@@ -205,6 +213,7 @@ class CPU:
             if ir in self.ops:
                 ir_op = self.ops[ir]
             else:
+                # Exit if the instruction is not a valid option
                 print("Unknown instruction " + str(ir) + " at " + str(self.pc))
                 sys.exit(1)
 
