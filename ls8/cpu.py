@@ -138,7 +138,7 @@ class CPU:
         self.reg[operand_a] = operand_b
         self.pc += 3
 
-    def handle_PRN(self, operand_a, operand_b):
+    def handle_PRN(self, operand_a):
         print(self.reg[operand_a])
         self.pc += 2
 
@@ -150,10 +150,10 @@ class CPU:
         self.alu('ADD', operand_a, operand_b)
         self.pc += 3
 
-    def handle_HLT(self, operand_a, operand_b):
+    def handle_HLT(self):
         sys.exit(0)
 
-    def handle_PUSH(self, operand_a, operand_b):
+    def handle_PUSH(self, operand_a):
         # given register (mar) <- operand_a
         # Decrement the SP
         self.reg[-1] -= 1
@@ -162,7 +162,7 @@ class CPU:
         self.ram_write(self.reg[operand_a], self.reg[-1])
         self.pc += 2
 
-    def handle_POP(self, operand_a, operand_b):
+    def handle_POP(self, operand_a):
         # given register (mar) <- operand_a
         # Copy the value from the address pointed to by SP to the given register.
         # self.reg[operand_a] = self.ram[self.reg[-1]]
@@ -171,11 +171,11 @@ class CPU:
         self.reg[-1] += 1
         self.pc += 2
 
-    def handle_RET(self, operand_a, operand_b):
+    def handle_RET(self):
         # Pop the value from the top of the stack and store it in the PC.
         self.pc = self.ram_read(self.reg[-1])
 
-    def handle_CALL(self, operand_a, operand_b):
+    def handle_CALL(self, operand_a):
         # given register <- operand_a
         # Push the address of the instruction directly after CALL onto the stack.
         self.reg[-1] += 1
@@ -203,13 +203,29 @@ class CPU:
             ir = self.ram_read(self.pc)
             ir_op = self.ops[ir]
             # Read the bytes at PC+1 and PC+2 in case the instruction needs them
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
+            # operand_a = self.ram_read(self.pc + 1)
+            # operand_b = self.ram_read(self.pc + 2)
 
             # self.trace()
 
+            # Check to see which operands are needed for the instruction
+            # print('{0:08b}'.format(ir))
+            num_operands = int('{0:08b}'.format(ir)[:2], 2)
+            # print("Num operands: " + str(num_operands))
+
             # Perform the actions needed for the instruction
-            ir_op(operand_a, operand_b)
+
+            if num_operands == 2:
+                operand_a = self.ram_read(self.pc + 1)
+                operand_b = self.ram_read(self.pc + 2)
+                ir_op(operand_a, operand_b)
+            elif num_operands == 1:
+                operand_a = self.ram_read(self.pc + 1)
+                ir_op(operand_a)
+            else:
+                ir_op()
+
+            # ir_op(operand_a, operand_b)
             '''
             if ir_op == LDI:
                 self.reg[operand_a] = operand_b
