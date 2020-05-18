@@ -8,6 +8,7 @@ HLT = 0b00000001
 MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
+ADD = 0b10100000
 
 
 class CPU:
@@ -35,6 +36,7 @@ class CPU:
         self.ops[MUL] = self.handle_MUL
         self.ops[PUSH] = self.handle_PUSH
         self.ops[POP] = self.handle_POP
+        self.ops[ADD] = self.handle_ADD
 
     def load(self):
         """Load a program into memory."""
@@ -136,6 +138,10 @@ class CPU:
 
     def handle_MUL(self, operand_a, operand_b):
         self.alu('MUL', operand_a, operand_b)
+        self.pc += 3
+
+    def handle_ADD(self, operand_a, operand_b):
+        self.alu('ADD', operand_a, operand_b)
         self.pc += 3
 
     def handle_HLT(self, operand_a, operand_b):
