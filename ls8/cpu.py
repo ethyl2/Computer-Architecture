@@ -81,15 +81,18 @@ class CPU:
             address += 1
 
     def ram_read(self, mar):
+        # Accept the address to read and return the value stored there
+
         # mar <- the address that is being read
         # return mdr <- the data that was read
         return self.ram[mar]
 
     def ram_write(self, mdr, mar):
+        # Accept a value to write, and the address to write it to
+
         # mdr <- the data to write
         # mar <- the address that is being written to
         self.ram[mar] = mdr
-        # no return, I guess?
 
     def alu(self, op, register_a, register_b):
         """ALU operations."""
@@ -216,11 +219,13 @@ class CPU:
                 ir_op(operand_a, operand_b)
                 if not sets_pc:
                     self.pc += 3
+
             elif num_operands == 1:
                 operand_a = self.ram_read(self.pc + 1)
                 ir_op(operand_a)
                 if not sets_pc:
                     self.pc += 2
+
             else:
                 ir_op()
                 if not sets_pc:
