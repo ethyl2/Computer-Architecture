@@ -11,6 +11,7 @@ POP = 0b01000110
 ADD = 0b10100000
 RET = 0b00010001
 CALL = 0b01010000
+ST = 0b10000100
 
 
 class CPU:
@@ -41,6 +42,7 @@ class CPU:
         self.ops[ADD] = self.handle_ADD
         self.ops[RET] = self.handle_RET
         self.ops[CALL] = self.handle_CALL
+        self.ops[ST] = self.handle_ST
 
     def load(self):
         """Load a program into memory."""
@@ -182,6 +184,14 @@ class CPU:
 
         # Set the PC to the address stored in the given register.
         self.pc = self.reg[operand_a]
+
+    def handle_ST(self, operand_a, operand_b):
+        # address to store value in <- operand_a
+        # register containing value to be stored <- operand_b
+
+        # Store value in 2nd register in address stored in 1st register.
+        # self.ram[self.reg[operand_a]] = self.reg[operand_b]
+        self.ram_write(self, self.reg[operand_b], self.reg[operand_a])
 
     def run(self):
         """Run the CPU."""
