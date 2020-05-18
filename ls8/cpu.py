@@ -104,10 +104,11 @@ class CPU:
             self.reg[register_a] = total & 0xFF
         # elif op == "SUB": etc
         elif op == 'MUL':
+            # self.reg[register_a] *= self.reg[register_b]
             product = self.reg[register_a] * self.reg[register_b]
             # To keep register within range 0-255
             self.reg[register_a] = product & 0xFF
-            # self.reg[register_a] *= self.reg[register_b]
+
         else:
             raise Exception("Unsupported ALU operation")
     '''
