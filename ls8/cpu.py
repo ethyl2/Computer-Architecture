@@ -201,7 +201,12 @@ class CPU:
         while True:
             # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
-            ir_op = self.ops[ir]
+
+            if ir in self.ops:
+                ir_op = self.ops[ir]
+            else:
+                print("Unknown instruction " + str(ir) + " at " + str(self.pc))
+                sys.exit(1)
 
             # Check to see which operands are needed for the instruction.
             # print('{0:08b}'.format(ir))
