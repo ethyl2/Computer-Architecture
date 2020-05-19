@@ -173,6 +173,11 @@ class CPU:
 
         # Copy the value in the given register to the address pointed to by SP
         # self.ram[self.reg[-1]] = self.reg[register]
+        '''
+        print("Value of SP " + str(self.reg[-1]))
+        print("Register: " + str(register))
+        print("Value of register: " + str(self.reg[register]))
+        '''
         self.ram_write(self.reg[register], self.reg[-1])
 
     def handle_POP(self, register):
@@ -221,13 +226,16 @@ class CPU:
             self.handle_POP(i)
 
         # Pop off the FL register from the stack.
-        self.handle_POP(self.fl)
+        self.fl = self.ram_read(self.reg[-1])
+        self.reg[-1] += 1
 
         # Pop off the return address from the stack and store it in PC
-        self.handle_POP(self.pc)
+        self.pc = self.ram_read(self.reg[-1])
+        self.reg[-1] += 1
 
         # Re-enable interrupts
         self.reg[5] = 1
+        self.start_time = time.time()
 
     def run(self):
         """Run the CPU."""
@@ -259,15 +267,21 @@ class CPU:
                         if interrupt_happened:
                             # Disable further interrupts
                             self.reg[5] = 0
+
                             # Clear the bit in the IS register
                             self.reg[6] = 0
+
                             # Push the PC register on the stack.
-                            self.handle_PUSH(self.pc)
+                            self.reg[-1] -= 1
+                            self.ram_write(self.pc, self.reg[-1])
+
                             # Push the FL register on the stack.
-                            self.handle_PUSH(self.fl)
+                            self.reg[-1] -= 1
+                            self.ram_write(self.fl, self.reg[-1])
+
                             # Push RO-R6 on the stack
                             for i in range(6):
-                                self.handle_PUSH(self.reg[i])
+                                self.handle_PUSH(i)  # self.reg[i]
                             # Look up the address of the appropriate handler from the interrupt vector table.
                             # And set the PC to the handler address
                             # self.pc = self.ram[248] # F8, the first slot of the interrupt vector table
