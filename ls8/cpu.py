@@ -230,6 +230,7 @@ class CPU:
 
     def handle_IRET(self):
         # Return from an interupt handler.
+        # print("Now in handle_IRET")
 
         # Pop off R6-R0 from the stack in that order.
         for i in range(6, -1, -1):
@@ -237,12 +238,13 @@ class CPU:
 
         # Pop off the FL register from the stack.
         self.fl = self.ram_read(self.reg[-1])
+        # print("self.fl is now " + str(self.fl))
         self.reg[-1] += 1
 
         # Pop off the return address from the stack and store it in PC
         self.pc = self.ram_read(self.reg[-1])
         self.reg[-1] += 1
-        print("back to address " + str(self.pc))
+        # print("back to address " + str(self.pc))
 
         # Re-enable interrupts
         self.reg[5] = 1
@@ -252,7 +254,7 @@ class CPU:
         """Run the CPU."""
 
         while True:
-            self.trace()
+            # self.trace()
 
             # Check to see if one second has elapsed
             current_time = time.time()
@@ -269,6 +271,7 @@ class CPU:
 
                 # If interrupts are enabled, bitwise-AND the IM with IS.
                 if interrupts_enabled:
+                    # print("Interrupts_enabled check passed")
                     masked_interrupts = self.reg[5] & self.reg[6]
 
                     # Step through each bit of masked_interrupts and see which interrupts are set.
@@ -278,6 +281,7 @@ class CPU:
                             (masked_interrupts >> i) & 1) == 1
 
                         if interrupt_happened:
+                            # print("Interrupt_happened")
                             # Disable further interrupts
                             self.reg[5] = 0
 
@@ -285,6 +289,7 @@ class CPU:
                             self.reg[6] = 0
 
                             # Push the PC register on the stack.
+                            # print("Putting the PC on the stack: " + str(self.pc))
                             self.reg[-1] -= 1
                             self.ram_write(self.pc, self.reg[-1])
 
@@ -293,14 +298,23 @@ class CPU:
                             self.ram_write(self.fl, self.reg[-1])
 
                             # Push RO-R6 on the stack
-                            for i in range(6):
+                            for i in range(7):
                                 self.handle_PUSH(i)  # self.reg[i]
                             # Look up the address of the appropriate handler from the interrupt vector table.
                             # And set the PC to the handler address
                             # self.pc = self.ram[248] # F8, the first slot of the interrupt vector table
                             self.pc = self.ram_read(248)
+                            # print(
+                            #     "Time to do the interrupt handling. Self.pc is now " + str(self.pc))
+                            break
+                        else:
+                            print("Interrupt didn't happen?")
 
-            # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
+                            # else:
+                            # print("Interrupts_enabled check failed")
+
+                    # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
+                    # self.trace()
             ir = self.ram_read(self.pc)
 
             if ir in self.ops:
