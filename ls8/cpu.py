@@ -118,12 +118,14 @@ class CPU:
         # op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
 
         if op == "ADD":
+            # Add the values in two registers and store the result in register_a.
             # self.reg[register_a] += self.reg[register_b]
             total = self.reg[register_a] + self.reg[register_b]
             # To keep register within range 0-255
             self.reg[register_a] = total & 0xFF
-        # elif op == "SUB": etc
+
         elif op == 'MUL':
+            # Multiply the values in two registers together and store the result in register_a.
             # self.reg[register_a] *= self.reg[register_b]
             product = self.reg[register_a] * self.reg[register_b]
             # To keep register within range 0-255
@@ -172,16 +174,6 @@ class CPU:
     def handle_PRA(self, register):
         # Print to the console the ASCII character corresponding to the value in the given register.
         print(chr(self.reg[register]))
-
-    def handle_MUL(self, register_a, register_b):
-        # In ALU, multiply the values in two registers together and store the result in register_a.
-        op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
-        self.alu(op, register_a, register_b)
-
-    def handle_ADD(self, register_a, register_b):
-        # In ALU, add the values in two registers and store the result in register_a.
-        op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
-        self.alu(op, register_a, register_b)
 
     def handle_HLT(self):
         # Halt the CPU (and exit the emulator).
