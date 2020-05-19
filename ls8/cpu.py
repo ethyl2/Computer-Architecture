@@ -93,7 +93,12 @@ class CPU:
 
         # mar <- the address that is being read
         # return mdr <- the data that was read
-        return self.ram[mar]
+        if mar < len(self.ram):
+            # print("current mar: " + str(mar))
+            return self.ram[mar]
+        else:
+            print("MAR is too high: " + str(mar))
+            sys.exit(1)
 
     def ram_write(self, mdr, mar):
         # Accept a value to write, and the address to write it to
@@ -119,13 +124,13 @@ class CPU:
 
         else:
             raise Exception("Unsupported ALU operation")
-    '''
+
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
         from run() if you need help debugging.
         """
-
+        '''
         print(f"TRACE: %02X | %02X %02X %02X |" % (
             self.pc,
             # self.fl,
@@ -134,12 +139,17 @@ class CPU:
             self.ram_read(self.pc + 1),
             self.ram_read(self.pc + 2)
         ), end='')
-
+        
         for i in range(8):
             print(" %02X" % self.reg[i], end='')
+        '''
+        print(str(self.pc) + " | " + str(self.ram_read(self.pc)) + " " +
+              str(self.ram_read(self.pc+1)) + " " + str(self.ram_read(self.pc+2)))
 
-        print()
-    '''
+        registers = []
+        for i in range(8):
+            registers.append(self.reg[i])
+        print(registers)
 
     def handle_LDI(self, register, immediate):
         # Set the value of the specified register to be the given value (immediate)
@@ -232,6 +242,7 @@ class CPU:
         # Pop off the return address from the stack and store it in PC
         self.pc = self.ram_read(self.reg[-1])
         self.reg[-1] += 1
+        print("back to address " + str(self.pc))
 
         # Re-enable interrupts
         self.reg[5] = 1
@@ -241,11 +252,13 @@ class CPU:
         """Run the CPU."""
 
         while True:
+            self.trace()
+
             # Check to see if one second has elapsed
             current_time = time.time()
             # print("Time difference: " + str(current_time - self.start_time))
             if current_time - self.start_time > 1:
-                print("Time to fire the timer interrupt")
+                # print("Time to fire the timer interrupt")
 
                 # Set bit #0 in IS (AKA R6, self.reg[6], Interrupt Status)
                 # Later, to handle multiple interrupts, modify this:
