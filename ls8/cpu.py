@@ -61,8 +61,8 @@ class CPU:
                     string_val = line.split("#")[0].strip()
                     if string_val == '':
                         continue
-                    v = int(string_val, 2)
-                    self.ram[address] = v
+                    bin_val = int(string_val, 2)
+                    self.ram[address] = bin_val
                     address += 1
 
         else:
@@ -329,8 +329,11 @@ class CPU:
                 sys.exit(1)
 
             # Check to see which operands are needed for the instruction.
-            # print('{0:08b}'.format(ir))
-            num_operands = int('{0:08b}'.format(ir)[:2], 2)
+
+            # Old way:
+            # num_operands = int('{0:08b}'.format(ir)[:2], 2)
+            # New way uses bitwise-AND and shifting to get the relevant bits.
+            num_operands = (ir & 11000000) >> 6
             # print("Num operands: " + str(num_operands))
 
             # Check to see if the instruction handler sets the PC directly.
