@@ -16,6 +16,7 @@ ST = 0b10000100
 JMP = 0b01010100
 PRA = 0b01001000
 IRET = 0b00010011
+SUB = 0b10100001
 
 
 class CPU:
@@ -34,10 +35,8 @@ class CPU:
         self.ops[LDI] = self.handle_LDI
         self.ops[PRN] = self.handle_PRN
         self.ops[HLT] = self.handle_HLT
-        self.ops[MUL] = self.alu  # self.handle_MUL
         self.ops[PUSH] = self.handle_PUSH
         self.ops[POP] = self.handle_POP
-        self.ops[ADD] = self.alu  # self.handle_ADD
         self.ops[RET] = self.handle_RET
         self.ops[CALL] = self.handle_CALL
         self.ops[ST] = self.handle_ST
@@ -45,9 +44,14 @@ class CPU:
         self.ops[PRA] = self.handle_PRA
         self.ops[IRET] = self.handle_IRET
 
+        self.ops[ADD] = self.alu
+        self.ops[MUL] = self.alu
+        self.ops[SUB] = self.alu
+
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
         self.alu_ops[0b0000] = 'ADD'
+        self.alu_ops[0b0001] = 'SUB'
 
         self.start_time = time.time()
 
@@ -121,14 +125,20 @@ class CPU:
             # Add the values in two registers and store the result in register_a.
             # self.reg[register_a] += self.reg[register_b]
             total = self.reg[register_a] + self.reg[register_b]
-            # To keep register within range 0-255
+            # To keep register value within range 0-255
             self.reg[register_a] = total & 0xFF
+
+        elif op == 'SUB':
+            # Subtract the value in the second register from the first, storing the result in register_a.
+            difference = self.reg[register_a] - self.reg[register_b]
+            # To keep register value within range 0-255
+            self.reg[register_a] = difference & 0xFF
 
         elif op == 'MUL':
             # Multiply the values in two registers together and store the result in register_a.
             # self.reg[register_a] *= self.reg[register_b]
             product = self.reg[register_a] * self.reg[register_b]
-            # To keep register within range 0-255
+            # To keep register value within range 0-255
             self.reg[register_a] = product & 0xFF
 
         else:
