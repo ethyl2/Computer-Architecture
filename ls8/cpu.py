@@ -333,11 +333,14 @@ class CPU:
             # Old way:
             # num_operands = int('{0:08b}'.format(ir)[:2], 2)
             # New way uses bitwise-AND and shifting to get the relevant bits.
-            num_operands = (ir & 11000000) >> 6
+            num_operands = (ir & 0b11000000) >> 6
             # print("Num operands: " + str(num_operands))
 
             # Check to see if the instruction handler sets the PC directly.
-            sets_pc = int('{0:08b}'.format(ir)[3])
+            # Old way:
+            # sets_pc = int('{0:08b}'.format(ir)[3])
+            # New way uses bitwise-AND and shifting to get the relevant bits.
+            sets_pc = (ir & 0b00010000) >> 4
 
             # Read the bytes at PC+1 and PC+2 if the instruction needs them.
             # Perform the actions needed for the instruction.
