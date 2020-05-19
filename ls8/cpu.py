@@ -34,16 +34,20 @@ class CPU:
         self.ops[LDI] = self.handle_LDI
         self.ops[PRN] = self.handle_PRN
         self.ops[HLT] = self.handle_HLT
-        self.ops[MUL] = self.handle_MUL
+        self.ops[MUL] = self.alu  # self.handle_MUL
         self.ops[PUSH] = self.handle_PUSH
         self.ops[POP] = self.handle_POP
-        self.ops[ADD] = self.handle_ADD
+        self.ops[ADD] = self.alu  # self.handle_ADD
         self.ops[RET] = self.handle_RET
         self.ops[CALL] = self.handle_CALL
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
         self.ops[PRA] = self.handle_PRA
         self.ops[IRET] = self.handle_IRET
+
+        self.alu_ops = {}
+        self.alu_ops[0b0010] = 'MUL'
+        self.alu_ops[0b0000] = 'ADD'
 
         self.start_time = time.time()
 
@@ -111,6 +115,8 @@ class CPU:
     def alu(self, op, register_a, register_b):
         """ALU operations."""
 
+        # op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
+
         if op == "ADD":
             # self.reg[register_a] += self.reg[register_b]
             total = self.reg[register_a] + self.reg[register_b]
@@ -169,11 +175,13 @@ class CPU:
 
     def handle_MUL(self, register_a, register_b):
         # In ALU, multiply the values in two registers together and store the result in register_a.
-        self.alu('MUL', register_a, register_b)
+        op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
+        self.alu(op, register_a, register_b)
 
     def handle_ADD(self, register_a, register_b):
         # In ALU, add the values in two registers and store the result in register_a.
-        self.alu('ADD', register_a, register_b)
+        op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
+        self.alu(op, register_a, register_b)
 
     def handle_HLT(self):
         # Halt the CPU (and exit the emulator).
@@ -317,8 +325,7 @@ class CPU:
                             # else:
                             # print("Interrupts_enabled check failed")
 
-                    # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
-                    # self.trace()
+            # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
 
             if ir in self.ops:
@@ -330,17 +337,19 @@ class CPU:
 
             # Check to see which operands are needed for the instruction.
 
-            # Old way:
-            # num_operands = int('{0:08b}'.format(ir)[:2], 2)
-            # New way uses bitwise-AND and shifting to get the relevant bits.
+            # Use bitwise-AND and shifting to get the relevant bits.
             num_operands = (ir & 0b11000000) >> 6
             # print("Num operands: " + str(num_operands))
 
             # Check to see if the instruction handler sets the PC directly.
-            # Old way:
-            # sets_pc = int('{0:08b}'.format(ir)[3])
-            # New way uses bitwise-AND and shifting to get the relevant bits.
+            # Use bitwise-AND and shifting to get the relevant bits.
             sets_pc = (ir & 0b00010000) >> 4
+
+            # Check to see if the instruction is handled by the ALU
+            handled_by_ALU = (ir & 0b00100000) >> 5
+
+            if handled_by_ALU:
+                op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
 
             # Read the bytes at PC+1 and PC+2 if the instruction needs them.
             # Perform the actions needed for the instruction.
@@ -348,13 +357,19 @@ class CPU:
             if num_operands == 2:
                 operand_a = self.ram_read(self.pc + 1)
                 operand_b = self.ram_read(self.pc + 2)
-                ir_op(operand_a, operand_b)
+                if handled_by_ALU:
+                    ir_op(op, operand_a, operand_b)
+                else:
+                    ir_op(operand_a, operand_b)
                 if not sets_pc:
                     self.pc += 3
 
             elif num_operands == 1:
                 operand_a = self.ram_read(self.pc + 1)
-                ir_op(operand_a)
+                if handled_by_ALU:
+                    ir_op(op, operand_a)
+                else:
+                    ir_op(operand_a)
                 if not sets_pc:
                     self.pc += 2
 
