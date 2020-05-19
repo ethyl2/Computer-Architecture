@@ -54,15 +54,16 @@ class CPU:
         # If a file is specified as the argument, load that file
         if len(sys.argv) > 1:
             file_to_load = sys.argv[1]
+            address = 0
 
             with open(os.path.join(sys.path[0], file_to_load), 'r') as f:
-                instructions = f.read()
-
-            separated = instructions.split()
-
-            for item in separated:
-                if item[0] == '0' or item[0] == '1':
-                    program.append(int(item, 2))
+                for line in f:
+                    string_val = line.split("#")[0].strip()
+                    if string_val == '':
+                        continue
+                    v = int(string_val, 2)
+                    self.ram[address] = v
+                    address += 1
 
         else:
             # If not argument, use hard-coded program:
