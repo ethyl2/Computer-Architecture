@@ -130,7 +130,7 @@ class CPU:
         Handy function to print out the CPU state. You might want to call this
         from run() if you need help debugging.
         """
-        '''
+
         print(f"TRACE: %02X | %02X %02X %02X |" % (
             self.pc,
             # self.fl,
@@ -139,10 +139,12 @@ class CPU:
             self.ram_read(self.pc + 1),
             self.ram_read(self.pc + 2)
         ), end='')
-        
+
         for i in range(8):
             print(" %02X" % self.reg[i], end='')
+        print()
         '''
+        # This is a version of trace that works with python2
         print(str(self.pc) + " | " + str(self.ram_read(self.pc)) + " " +
               str(self.ram_read(self.pc+1)) + " " + str(self.ram_read(self.pc+2)))
 
@@ -150,6 +152,7 @@ class CPU:
         for i in range(8):
             registers.append(self.reg[i])
         print(registers)
+        '''
 
     def handle_LDI(self, register, immediate):
         # Set the value of the specified register to be the given value (immediate)
