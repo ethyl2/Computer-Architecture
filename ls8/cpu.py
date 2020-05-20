@@ -25,6 +25,7 @@ OR = 0b10101010
 XOR = 0b10101011
 SHR = 0b10101101
 SHL = 0b10101100
+NOT = 0b01101001
 
 
 class CPU:
@@ -61,6 +62,7 @@ class CPU:
         self.ops[XOR] = self.alu
         self.ops[SHR] = self.alu
         self.ops[SHL] = self.alu
+        self.ops[NOT] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
@@ -72,6 +74,7 @@ class CPU:
         self.alu_ops[0b1011] = 'XOR'
         self.alu_ops[0b1101] = 'SHR'
         self.alu_ops[0b1100] = 'SHL'
+        self.alu_ops[0b1001] = 'NOT'
 
         self.start_time = time.time()
 
@@ -136,7 +139,7 @@ class CPU:
         # mar <- the address that is being written to
         self.ram[mar] = mdr
 
-    def alu(self, op, register_a, register_b):
+    def alu(self, op, register_a, register_b=None):
         """ALU operations."""
 
         # op = self.alu_ops[self.ram_read(self.pc) & 0b00001111]
@@ -206,6 +209,12 @@ class CPU:
             self.reg[register_a] = result & 0xFF
             # print('{0:08b}'.format(self.reg[register_a]))
 
+        elif op == 'NOT':
+            # Perform a bitwise-NOT on the value in a register, storing the result in the register.
+            # print('{0:08b}'.format(self.reg[register_a]))
+            # self.reg[register_a] = ~self.reg[register_a]
+            self.reg[register_a] = (1 << 8) - 1 - self.reg[register_a]
+            # print('{0:08b}'.format(self.reg[register_a]))
         else:
             raise Exception("Unsupported ALU operation")
 
