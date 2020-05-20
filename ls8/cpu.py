@@ -21,6 +21,7 @@ MUL = 0b10100010
 DIV = 0b10100011
 
 DEC = 0b01100110
+INC = 0b01100101
 
 AND = 0b10101000
 OR = 0b10101010
@@ -60,6 +61,7 @@ class CPU:
         self.ops[SUB] = self.alu
         self.ops[DIV] = self.alu
         self.ops[DEC] = self.alu
+        self.ops[INC] = self.alu
         self.ops[AND] = self.alu
         self.ops[OR] = self.alu
         self.ops[XOR] = self.alu
@@ -79,6 +81,7 @@ class CPU:
         self.alu_ops[0b1101] = 'SHR'
         self.alu_ops[0b1100] = 'SHL'
         self.alu_ops[0b1001] = 'NOT'
+        self.alu_ops[0b0101] = 'INC'
 
         self.start_time = time.time()
 
@@ -225,6 +228,10 @@ class CPU:
         elif op == 'DEC':
             # Decrement (subtract 1 from) the value in the given register
             self.reg[register_a] -= 1
+
+        elif op == 'INC':
+            # Increment (add 1 to) the value in the given register
+            self.reg[register_a] += 1
 
         else:
             raise Exception("Unsupported ALU operation")
