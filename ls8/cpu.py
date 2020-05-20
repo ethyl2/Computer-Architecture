@@ -2,8 +2,6 @@
 import os
 import sys
 import time
-import msvcrt
-
 
 LDI = 0b10000010
 PRN = 0b01000111
@@ -290,7 +288,7 @@ class CPU:
         # Push the value in the given register on the stack.
 
         # Decrement the SP (stack pointer)
-        self.reg[-1] -= 1
+        self.reg[self.sp] -= 1
 
         # Copy the value in the given register to the address pointed to by SP
         # self.ram[self.reg[-1]] = self.reg[register]
@@ -299,30 +297,30 @@ class CPU:
         print("Register: " + str(register))
         print("Value of register: " + str(self.reg[register]))
         '''
-        self.ram_write(self.reg[register], self.reg[-1])
+        self.ram_write(self.reg[register], self.reg[self.sp])
 
     def handle_POP(self, register):
         # Pop the value at the top of the stack into the given register.
 
         # Copy the value from the address pointed to by SP to the given register.
         # self.reg[register] = self.ram[self.reg[-1]]
-        self.reg[register] = self.ram_read(self.reg[-1])
+        self.reg[register] = self.ram_read(self.reg[self.sp])
 
         # Increment SP (stack pointer)
-        self.reg[-1] += 1
+        self.reg[self.sp] += 1
 
     def handle_RET(self):
         # Return from subroutine.
         # Pop the value from the top of the stack and store it in the PC.
-        self.pc = self.ram_read(self.reg[-1])
+        self.pc = self.ram_read(self.reg[self.sp])
 
     def handle_CALL(self, register):
         # Call a subroutine (function) at the address stored in the register.
 
         # Push the address of the instruction directly after CALL onto the stack.
-        self.reg[-1] += 1
+        self.reg[self.sp] += 1
         # self.ram[self.reg[-1]] = pc + 2
-        self.ram_write(self.pc + 2, self.reg[-1])
+        self.ram_write(self.pc + 2, self.reg[self.sp])
 
         # Set the PC to the address stored in the given register.
         self.pc = self.reg[register]
@@ -350,11 +348,11 @@ class CPU:
         # Pop off the FL register from the stack.
         self.fl = self.ram_read(self.reg[-1])
         # print("self.fl is now " + str(self.fl))
-        self.reg[-1] += 1
+        self.reg[self.sp] += 1
 
         # Pop off the return address from the stack and store it in PC
         self.pc = self.ram_read(self.reg[-1])
-        self.reg[-1] += 1
+        self.reg[self.sp] += 1
         # print("back to address " + str(self.pc))
 
         # Re-enable interrupts
@@ -367,10 +365,9 @@ class CPU:
 
         while True:
             c = stdscr.getch()
-            '''
+
             if c == ord('q'):
                 sys.exit(0)
-            '''
             if c != -1:
                 stdscr.clear()
                 stdscr.refresh()
@@ -388,52 +385,52 @@ class CPU:
                 # Later, to handle multiple interrupts, modify this:
                 self.reg[6] = 1
 
-                # Check to see if interrupts are enabled by looking at value of IM (AKA R5, self.reg[5], Interrupt Mask)
-                interrupts_enabled = self.reg[5] > 0
+            # Check to see if interrupts are enabled by looking at value of IM (AKA R5, self.reg[5], Interrupt Mask)
+            interrupts_enabled = self.reg[5] > 0
 
-                # If interrupts are enabled, bitwise-AND the IM with IS.
-                if interrupts_enabled:
-                    # print("Interrupts_enabled check passed")
-                    masked_interrupts = self.reg[5] & self.reg[6]
+            # If interrupts are enabled, bitwise-AND the IM with IS.
+            if interrupts_enabled:
+                # print("Interrupts_enabled check passed")
+                masked_interrupts = self.reg[5] & self.reg[6]
 
-                    # Step through each bit of masked_interrupts and see which interrupts are set.
-                    for i in range(8):
-                        # Right shift interrupts down by i, then mask with 1 to see if that bit was set
-                        interrupt_happened = (
-                            (masked_interrupts >> i) & 1) == 1
+                # Step through each bit of masked_interrupts and see which interrupts are set.
+                for i in range(8):
+                    # Right shift interrupts down by i, then mask with 1 to see if that bit was set
+                    interrupt_happened = (
+                        (masked_interrupts >> i) & 1) == 1
 
-                        if interrupt_happened:
-                            # print("Interrupt_happened")
-                            # Disable further interrupts
-                            self.reg[5] = 0
+                    if interrupt_happened:
+                        # print("Interrupt_happened")
+                        # Disable further interrupts
+                        self.reg[5] = 0
 
-                            # Clear the bit in the IS register
-                            self.reg[6] = 0
+                        # Clear the bit in the IS register
+                        self.reg[6] = 0
 
-                            # Push the PC register on the stack.
-                            # print("Putting the PC on the stack: " + str(self.pc))
-                            self.reg[-1] -= 1
-                            self.ram_write(self.pc, self.reg[-1])
+                        # Push the PC register on the stack.
+                        # print("Putting the PC on the stack: " + str(self.pc))
+                        self.reg[self.sp] -= 1
+                        self.ram_write(self.pc, self.reg[self.sp])
 
-                            # Push the FL register on the stack.
-                            self.reg[-1] -= 1
-                            self.ram_write(self.fl, self.reg[-1])
+                        # Push the FL register on the stack.
+                        self.reg[-1] -= 1
+                        self.ram_write(self.fl, self.reg[self.sp])
 
-                            # Push RO-R6 on the stack
-                            for i in range(7):
-                                self.handle_PUSH(i)  # self.reg[i]
-                            # Look up the address of the appropriate handler from the interrupt vector table.
-                            # And set the PC to the handler address
-                            # self.pc = self.ram[248] # F8, the first slot of the interrupt vector table
-                            self.pc = self.ram_read(248)
-                            # print(
-                            #     "Time to do the interrupt handling. Self.pc is now " + str(self.pc))
-                            break
-                        else:
-                            print("Interrupt didn't happen?")
+                        # Push RO-R6 on the stack
+                        for i in range(7):
+                            self.handle_PUSH(i)  # self.reg[i]
+                        # Look up the address of the appropriate handler from the interrupt vector table.
+                        # And set the PC to the handler address
+                        # self.pc = self.ram[248] # F8, the first slot of the interrupt vector table
+                        self.pc = self.ram_read(248)
+                        # print(
+                        #     "Time to do the interrupt handling. Self.pc is now " + str(self.pc))
+                        break
+                    else:
+                        print("Interrupt didn't happen?")
 
-                            # else:
-                            # print("Interrupts_enabled check failed")
+                        # else:
+                        # print("Interrupts_enabled check failed")
 
             # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)
