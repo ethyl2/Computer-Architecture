@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import curses
 
 """Main."""
 
@@ -8,4 +9,7 @@ from cpu import *
 cpu = CPU()
 
 cpu.load()
-cpu.run()
+# cpu.run()
+
+if __name__ == '__main__':
+    curses.wrapper(cpu.run)

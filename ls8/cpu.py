@@ -2,6 +2,8 @@
 import os
 import sys
 import time
+import msvcrt
+
 
 LDI = 0b10000010
 PRN = 0b01000111
@@ -37,11 +39,14 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0] * 8
-        # sets SP (stack pointer) to the value F4 # maybe move to a helper method
-        self.reg[-1] = 0b11110100  # 0xf4
+        # sets SP (stack pointer) to the value F4
+        self.sp = -1  # AKA 7
+        self.reg[self.sp] = 0b11110100  # 0xf4
+
         self.ram = [0] * 256
         self.pc = 0
         self.fl = 0b00000000
+
         self.ops = {}
 
         self.ops[LDI] = self.handle_LDI
@@ -356,11 +361,22 @@ class CPU:
         self.reg[5] = 1
         self.start_time = time.time()
 
-    def run(self):
+    def run(self, stdscr):
         """Run the CPU."""
+        stdscr.nodelay(1)
 
         while True:
-            # self.trace()
+            c = stdscr.getch()
+            '''
+            if c == ord('q'):
+                sys.exit(0)
+            '''
+            if c != -1:
+                stdscr.clear()
+                stdscr.refresh()
+                stdscr.move(0, 0)
+                print(c)
+                print("Time to fire keyboard interrupts")
 
             # Check to see if one second has elapsed
             current_time = time.time()
@@ -426,7 +442,8 @@ class CPU:
                 ir_op = self.ops[ir]
             else:
                 # Exit if the instruction is not a valid option
-                print("Unknown instruction " + str(ir) + " at " + str(self.pc))
+                print("Unknown instruction " +
+                      str(ir) + " at " + str(self.pc))
                 sys.exit(1)
 
             # Check to see which operands are needed for the instruction.
