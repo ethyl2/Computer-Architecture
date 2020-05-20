@@ -211,10 +211,12 @@ class CPU:
 
         elif op == 'NOT':
             # Perform a bitwise-NOT on the value in a register, storing the result in the register.
-            # print('{0:08b}'.format(self.reg[register_a]))
-            # self.reg[register_a] = ~self.reg[register_a]
-            self.reg[register_a] = (1 << 8) - 1 - self.reg[register_a]
-            # print('{0:08b}'.format(self.reg[register_a]))
+            print('{0:08b}'.format(self.reg[register_a]))
+            # One way:
+            # self.reg[register_a] = (1 << 8) - 1 - self.reg[register_a]
+            # Another way:
+            self.reg[register_a] = ~self.reg[register_a] & ((1 << 8) - 1)
+            print('{0:08b}'.format(self.reg[register_a]))
         else:
             raise Exception("Unsupported ALU operation")
 
