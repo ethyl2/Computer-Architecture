@@ -19,6 +19,7 @@ ADD = 0b10100000
 SUB = 0b10100001
 MUL = 0b10100010
 DIV = 0b10100011
+MOD = 0b10100100
 
 DEC = 0b01100110
 INC = 0b01100101
@@ -63,6 +64,7 @@ class CPU:
         self.ops[MUL] = self.alu
         self.ops[SUB] = self.alu
         self.ops[DIV] = self.alu
+        self.ops[MOD] = self.alu
         self.ops[DEC] = self.alu
         self.ops[INC] = self.alu
         self.ops[AND] = self.alu
@@ -77,6 +79,7 @@ class CPU:
         self.alu_ops[0b0000] = 'ADD'
         self.alu_ops[0b0001] = 'SUB'
         self.alu_ops[0b0011] = 'DIV'
+        self.alu_ops[0b0100] = 'MOD'
         self.alu_ops[0b0110] = 'DEC'
         self.alu_ops[0b1000] = 'AND'
         self.alu_ops[0b1010] = 'OR'
@@ -181,6 +184,14 @@ class CPU:
                 sys.exit(1)
             quotient = self.reg[register_a] // self.reg[register_b]
             self.reg[register_a] = quotient & 0xFF
+
+        elif op == 'MOD':
+            # Divide the value in the first register by the value in the second, storing the remainder of the result in registerA.
+            if self.reg[register_b] == 0:
+                print("Division by 0 is not allowed.")
+                sys.exit(1)
+            remainder = self.reg[register_a] % self.reg[register_b]
+            self.reg[register_a] = remainder & 0xFF
 
         elif op == 'AND':
             # Bitwise-AND the values in register_a and register_b, then store the result in register_a.
@@ -359,11 +370,12 @@ class CPU:
         self.reg[5] = 1
         self.start_time = time.time()
 
-    def run(self, stdscr):
+    def run(self):  # , stdscr is 2nd arg for keyboard polling
         """Run the CPU."""
-        stdscr.nodelay(1)
+        # stdscr.nodelay(1)
 
         while True:
+            '''
             c = stdscr.getch()
 
             if c == ord('q'):
@@ -374,7 +386,11 @@ class CPU:
                 stdscr.move(0, 0)
                 print(c)
                 print("Time to fire keyboard interrupts")
-
+                # Set second bit in IS (AKA R6, self.reg[6], Interrupt Status)
+                initial_is = self.reg[6]
+                result = initial_is | 0b00000010
+                self.reg[6] = result
+            '''
             # Check to see if one second has elapsed
             current_time = time.time()
             # print("Time difference: " + str(current_time - self.start_time))
@@ -382,8 +398,11 @@ class CPU:
                 # print("Time to fire the timer interrupt")
 
                 # Set bit #0 in IS (AKA R6, self.reg[6], Interrupt Status)
-                # Later, to handle multiple interrupts, modify this:
-                self.reg[6] = 1
+                initial_is = self.reg[6]
+                result = initial_is | 0b00000001
+                self.reg[6] = result
+                # print("set IS: " + str(self.reg[6]))
+                # self.reg[6] = 1
 
             # Check to see if interrupts are enabled by looking at value of IM (AKA R5, self.reg[5], Interrupt Mask)
             interrupts_enabled = self.reg[5] > 0
@@ -399,13 +418,17 @@ class CPU:
                     interrupt_happened = (
                         (masked_interrupts >> i) & 1) == 1
 
-                    if interrupt_happened:
+                    if interrupt_happened:  # and i == 0:
+                        # Timer interrupt
                         # print("Interrupt_happened")
                         # Disable further interrupts
                         self.reg[5] = 0
 
                         # Clear the bit in the IS register
-                        self.reg[6] = 0
+                        initial_is = self.reg[6]
+                        result = initial_is ^ 0b00000001
+                        self.reg[6] = result
+                        # self.reg[6] = 0
 
                         # Push the PC register on the stack.
                         # print("Putting the PC on the stack: " + str(self.pc))
@@ -426,11 +449,45 @@ class CPU:
                         # print(
                         #     "Time to do the interrupt handling. Self.pc is now " + str(self.pc))
                         break
+
+                    elif interrupt_happened and i == 1:
+                        # Keyboard interrupt
+                        # print("Interrupt_happened")
+                        # Disable further interrupts
+                        self.reg[5] = 0
+
+                        # Clear the 2nd bit in the IS register
+                        initial_is = self.reg[6]
+                        result = initial_is ^ 0b00000010
+                        self.reg[6] = result
+
+                        # Push the PC register on the stack.
+                        # print("Putting the PC on the stack: " + str(self.pc))
+                        self.reg[self.sp] -= 1
+                        self.ram_write(self.pc, self.reg[self.sp])
+
+                        # Push the FL register on the stack.
+                        self.reg[self.sp] -= 1
+                        self.ram_write(self.fl, self.reg[self.sp])
+
+                        # Push RO-R6 on the stack
+                        for i in range(7):
+                            self.handle_PUSH(i)  # self.reg[i]
+                        # Look up the address of the appropriate handler from the interrupt vector table.
+                        # And set the PC to the handler address
+                        # self.pc = self.ram[249] # F9, the second slot of the interrupt vector table
+                        self.pc = self.ram_read(249)
+                        # print(
+                        #     "Time to do the interrupt handling. Self.pc is now " + str(self.pc))
+                        break
+                    '''
                     else:
-                        print("Interrupt didn't happen?")
+                        # print("Interrupt didn't happen?")
+                        not_important = True
 
                         # else:
                         # print("Interrupts_enabled check failed")
+                    '''
 
             # Read the memory address stored in register PC (Program Counter) and store result in IR (Instruction Register)
             ir = self.ram_read(self.pc)

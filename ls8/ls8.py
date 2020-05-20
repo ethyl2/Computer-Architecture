@@ -9,7 +9,8 @@ from cpu import *
 cpu = CPU()
 
 cpu.load()
-# cpu.run()
-
+cpu.run()
+'''
 if __name__ == '__main__':
     curses.wrapper(cpu.run)
+'''
