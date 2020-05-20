@@ -20,6 +20,8 @@ SUB = 0b10100001
 MUL = 0b10100010
 DIV = 0b10100011
 
+DEC = 0b01100110
+
 AND = 0b10101000
 OR = 0b10101010
 XOR = 0b10101011
@@ -57,6 +59,7 @@ class CPU:
         self.ops[MUL] = self.alu
         self.ops[SUB] = self.alu
         self.ops[DIV] = self.alu
+        self.ops[DEC] = self.alu
         self.ops[AND] = self.alu
         self.ops[OR] = self.alu
         self.ops[XOR] = self.alu
@@ -69,6 +72,7 @@ class CPU:
         self.alu_ops[0b0000] = 'ADD'
         self.alu_ops[0b0001] = 'SUB'
         self.alu_ops[0b0011] = 'DIV'
+        self.alu_ops[0b0110] = 'DEC'
         self.alu_ops[0b1000] = 'AND'
         self.alu_ops[0b1010] = 'OR'
         self.alu_ops[0b1011] = 'XOR'
@@ -211,12 +215,17 @@ class CPU:
 
         elif op == 'NOT':
             # Perform a bitwise-NOT on the value in a register, storing the result in the register.
-            print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_a]))
             # One way:
             # self.reg[register_a] = (1 << 8) - 1 - self.reg[register_a]
             # Another way:
             self.reg[register_a] = ~self.reg[register_a] & ((1 << 8) - 1)
-            print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_a]))
+
+        elif op == 'DEC':
+            # Decrement (subtract 1 from) the value in the given register
+            self.reg[register_a] -= 1
+
         else:
             raise Exception("Unsupported ALU operation")
 
