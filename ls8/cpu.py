@@ -21,6 +21,7 @@ MUL = 0b10100010
 DIV = 0b10100011
 
 AND = 0b10101000
+OR = 0b10101010
 
 
 class CPU:
@@ -53,6 +54,7 @@ class CPU:
         self.ops[SUB] = self.alu
         self.ops[DIV] = self.alu
         self.ops[AND] = self.alu
+        self.ops[OR] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
@@ -60,6 +62,7 @@ class CPU:
         self.alu_ops[0b0001] = 'SUB'
         self.alu_ops[0b0011] = 'DIV'
         self.alu_ops[0b1000] = 'AND'
+        self.alu_ops[0b1010] = 'OR'
 
         self.start_time = time.time()
 
@@ -160,10 +163,19 @@ class CPU:
         elif op == 'AND':
             # Bitwise-AND the values in register_a and register_b, then store the result in register_a.
             result = self.reg[register_a] & self.reg[register_b]
-            print('{0:08b}'.format(self.reg[register_a]))
-            print('{0:08b}'.format(self.reg[register_b]))
+            # print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_b]))
             self.reg[register_a] = result
-            print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_a]))
+
+        elif op == 'OR':
+            print('in bitwise-OR')
+            # Perform a bitwise-OR between the values in register_a and register_b, storing the result in register_a.
+            result = self.reg[register_a] | self.reg[register_b]
+            # print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_b]))
+            self.reg[register_a] = result
+            # print('{0:08b}'.format(self.reg[register_a]))
         else:
             raise Exception("Unsupported ALU operation")
 
