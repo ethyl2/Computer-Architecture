@@ -24,6 +24,7 @@ AND = 0b10101000
 OR = 0b10101010
 XOR = 0b10101011
 SHR = 0b10101101
+SHL = 0b10101100
 
 
 class CPU:
@@ -59,6 +60,7 @@ class CPU:
         self.ops[OR] = self.alu
         self.ops[XOR] = self.alu
         self.ops[SHR] = self.alu
+        self.ops[SHL] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
@@ -69,6 +71,7 @@ class CPU:
         self.alu_ops[0b1010] = 'OR'
         self.alu_ops[0b1011] = 'XOR'
         self.alu_ops[0b1101] = 'SHR'
+        self.alu_ops[0b1100] = 'SHL'
 
         self.start_time = time.time()
 
@@ -194,6 +197,13 @@ class CPU:
             # Shift the value in register_a right by the number of bits specified in register_b, filling the high bits with 0.
             # print('{0:08b}'.format(self.reg[register_a]))
             self.reg[register_a] = self.reg[register_a] >> self.reg[register_b]
+            # print('{0:08b}'.format(self.reg[register_a]))
+
+        elif op == 'SHL':
+            # Shift the value in register_a left by the number of bits specified in register_b, filling the low bits with 0.
+            # print('{0:08b}'.format(self.reg[register_a]))
+            result = self.reg[register_a] << self.reg[register_b]
+            self.reg[register_a] = result & 0xFF
             # print('{0:08b}'.format(self.reg[register_a]))
 
         else:
