@@ -6,17 +6,19 @@ import time
 LDI = 0b10000010
 PRN = 0b01000111
 HLT = 0b00000001
-MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
-ADD = 0b10100000
 RET = 0b00010001
 CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
 PRA = 0b01001000
 IRET = 0b00010011
+
+ADD = 0b10100000
 SUB = 0b10100001
+MUL = 0b10100010
+DIV = 0b10100011
 
 
 class CPU:
@@ -47,11 +49,13 @@ class CPU:
         self.ops[ADD] = self.alu
         self.ops[MUL] = self.alu
         self.ops[SUB] = self.alu
+        self.ops[DIV] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
         self.alu_ops[0b0000] = 'ADD'
         self.alu_ops[0b0001] = 'SUB'
+        self.alu_ops[0b0011] = 'DIV'
 
         self.start_time = time.time()
 
@@ -140,6 +144,14 @@ class CPU:
             product = self.reg[register_a] * self.reg[register_b]
             # To keep register value within range 0-255
             self.reg[register_a] = product & 0xFF
+
+        elif op == 'DIV':
+            # Divide the value in the first register by the value in the second, storing the result in register_a.
+            if self.reg[register_b] == 0:
+                print("Division by 0 is not allowed.")
+                sys.exit(1)
+            quotient = self.reg[register_a] // self.reg[register_b]
+            self.reg[register_a] = quotient & 0xFF
 
         else:
             raise Exception("Unsupported ALU operation")
