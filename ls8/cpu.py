@@ -20,6 +20,8 @@ SUB = 0b10100001
 MUL = 0b10100010
 DIV = 0b10100011
 
+AND = 0b10101000
+
 
 class CPU:
     """Main CPU class."""
@@ -50,12 +52,14 @@ class CPU:
         self.ops[MUL] = self.alu
         self.ops[SUB] = self.alu
         self.ops[DIV] = self.alu
+        self.ops[AND] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
         self.alu_ops[0b0000] = 'ADD'
         self.alu_ops[0b0001] = 'SUB'
         self.alu_ops[0b0011] = 'DIV'
+        self.alu_ops[0b1000] = 'AND'
 
         self.start_time = time.time()
 
@@ -153,6 +157,13 @@ class CPU:
             quotient = self.reg[register_a] // self.reg[register_b]
             self.reg[register_a] = quotient & 0xFF
 
+        elif op == 'AND':
+            # Bitwise-AND the values in register_a and register_b, then store the result in register_a.
+            result = self.reg[register_a] & self.reg[register_b]
+            print('{0:08b}'.format(self.reg[register_a]))
+            print('{0:08b}'.format(self.reg[register_b]))
+            self.reg[register_a] = result
+            print('{0:08b}'.format(self.reg[register_a]))
         else:
             raise Exception("Unsupported ALU operation")
 
