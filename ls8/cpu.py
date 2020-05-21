@@ -17,6 +17,7 @@ JGE = 0b01011010
 JLT = 0b01011000
 JLE = 0b01011001
 JGT = 0b01010111
+JNE = 0b01010110
 PRA = 0b01001000
 IRET = 0b00010011
 
@@ -69,6 +70,7 @@ class CPU:
         self.ops[JLT] = self.handle_JLT
         self.ops[JLE] = self.handle_JLE
         self.ops[JGT] = self.handle_JGT
+        self.ops[JNE] = self.handle_JNE
         self.ops[PRA] = self.handle_PRA
         self.ops[IRET] = self.handle_IRET
 
@@ -431,6 +433,15 @@ class CPU:
             self.pc = self.reg[register]
         else:
             self.pc += 2
+
+    def handle_JNE(self, register):
+        # If E flag is clear (false, 0), jump to the address stored in the given register.
+        if self.fl & 0b00000001:
+            # print("Equal flag is true")
+            self.pc += 2
+        else:
+            # print("Equal flag is clear")
+            self.pc = self.reg[register]
 
     def handle_IRET(self):
         # Return from an interupt handler.
