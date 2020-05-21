@@ -13,6 +13,7 @@ CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
 JEQ = 0b01010101
+JGE = 0b01011010
 JLT = 0b01011000
 JLE = 0b01011001
 JGT = 0b01010111
@@ -64,6 +65,7 @@ class CPU:
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
         self.ops[JEQ] = self.handle_JEQ
+        self.ops[JGE] = self.handle_JGE
         self.ops[JLT] = self.handle_JLT
         self.ops[JLE] = self.handle_JLE
         self.ops[JGT] = self.handle_JGT
@@ -398,10 +400,11 @@ class CPU:
     def handle_JLE(self, register):
         # If less-than flag or equal flag is set (true), jump to the address stored in the given register.
         if self.fl >> 2 or self.fl & 0b00000001:
-            print("Less-than or equal flag is true")
-            print("Jump to " + str(self.reg[register]))
+            # print("Less-than or equal flag is true")
+            # print("Jump to " + str(self.reg[register]))
             self.pc = self.reg[register]
             '''
+            # If you want to break up the 2 conditions, modify the one above and add below
             elif self.fl & 0b00000001:
                 # print("Equal flag is true")
                 # print("Jump to " + str(self.reg[register]))
@@ -414,8 +417,17 @@ class CPU:
     def handle_JGT(self, register):
         # If greater-than flag is set (true), jump to the address stored in the given register.
         if self.fl >> 1 == 1:
-            print("Greater-than flag is true")
-            print("Jump to " + str(self.reg[register]))
+            # print("Greater-than flag is true")
+            # print("Jump to " + str(self.reg[register]))
+            self.pc = self.reg[register]
+        else:
+            self.pc += 2
+
+    def handle_JGE(self, register):
+        # If the greater-than or the equal flag is set (true), jump to the address stored in the given register.
+        if self.fl >> 1 == 1 or self.fl & 0b00000001:
+            # print("Greater-than or equal flag is true")
+            # print("Jump to " + str(self.reg[register]))
             self.pc = self.reg[register]
         else:
             self.pc += 2
