@@ -14,6 +14,7 @@ ST = 0b10000100
 JMP = 0b01010100
 JLT = 0b01011000
 JLE = 0b01011001
+JGT = 0b01010111
 PRA = 0b01001000
 IRET = 0b00010011
 
@@ -63,6 +64,7 @@ class CPU:
         self.ops[JMP] = self.handle_JMP
         self.ops[JLT] = self.handle_JLT
         self.ops[JLE] = self.handle_JLE
+        self.ops[JGT] = self.handle_JGT
         self.ops[PRA] = self.handle_PRA
         self.ops[IRET] = self.handle_IRET
 
@@ -270,7 +272,7 @@ class CPU:
             # If register_a is greater than registerB, set the Greater-than G flag to 1, otherwise set it to 0.
             elif self.reg[register_a] > self.reg[register_b]:
                 self.fl = 0b00000010
-            print('{0:08b}'.format(self.fl))
+            print('self.fl:' + '{0:08b}'.format(self.fl))
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -398,6 +400,15 @@ class CPU:
             '''
         else:
             print("Less-than and equal flags are false")
+            self.pc += 2
+
+    def handle_JGT(self, register):
+        # If greater-than flag is set (true), jump to the address stored in the given register.
+        if self.fl >> 1 == 1:
+            print("Greater-than flag is true")
+            print("Jump to " + str(self.reg[register]))
+            self.pc = self.reg[register]
+        else:
             self.pc += 2
 
     def handle_IRET(self):
