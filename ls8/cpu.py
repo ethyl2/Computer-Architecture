@@ -4,6 +4,7 @@ import sys
 import time
 
 LDI = 0b10000010
+LD = 0b10000011
 PRN = 0b01000111
 HLT = 0b00000001
 PUSH = 0b01000101
@@ -57,6 +58,7 @@ class CPU:
         self.ops = {}
 
         self.ops[LDI] = self.handle_LDI
+        self.ops[LD] = self.handle_LD
         self.ops[PRN] = self.handle_PRN
         self.ops[HLT] = self.handle_HLT
         self.ops[PUSH] = self.handle_PUSH
@@ -316,13 +318,21 @@ class CPU:
         # Set the value of the specified register to be the given value (immediate)
         self.reg[register] = immediate
 
+    def handle_LD(self, register_a, register_b):
+        # Loads register_a with the value at the memory address stored in register_b.
+        memory_address = self.reg[register_b]
+        # value = self.ram[memory_address]
+        value = self.ram_read(memory_address)
+        self.reg[register_a] = value
+
     def handle_PRN(self, register):
         # Print to the console the decimal integer value that is stored in the given register.
         print(self.reg[register])
 
     def handle_PRA(self, register):
         # Print to the console the ASCII character corresponding to the value in the given register.
-        print(chr(self.reg[register]))
+        # end="" should keep from going to a new line
+        print(chr(self.reg[register]), end="")
 
     def handle_HLT(self):
         # Halt the CPU (and exit the emulator).
