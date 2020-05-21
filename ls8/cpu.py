@@ -13,6 +13,7 @@ CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
 JLT = 0b01011000
+JLE = 0b01011001
 PRA = 0b01001000
 IRET = 0b00010011
 
@@ -61,6 +62,7 @@ class CPU:
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
         self.ops[JLT] = self.handle_JLT
+        self.ops[JLE] = self.handle_JLE
         self.ops[PRA] = self.handle_PRA
         self.ops[IRET] = self.handle_IRET
 
@@ -268,6 +270,7 @@ class CPU:
             # If register_a is greater than registerB, set the Greater-than G flag to 1, otherwise set it to 0.
             elif self.reg[register_a] > self.reg[register_b]:
                 self.fl = 0b00000010
+            print('{0:08b}'.format(self.fl))
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -375,9 +378,27 @@ class CPU:
     def handle_JLT(self, register):
         # If less-than flag is set (true), jump to the address stored in the given register.
         if self.fl >> 2:
-            print("Less-than flag is true")
+            # print("Less-than flag is true")
+            # print("Jump to " + str(self.reg[register]))
+            self.pc = self.reg[register]
+        else:
+            self.pc += 2
+
+    def handle_JLE(self, register):
+        # If less-than flag or equal flag is set (true), jump to the address stored in the given register.
+        if self.fl >> 2 or self.fl & 0b00000001:
+            print("Less-than or equal flag is true")
             print("Jump to " + str(self.reg[register]))
             self.pc = self.reg[register]
+            '''
+            elif self.fl & 0b00000001:
+                # print("Equal flag is true")
+                # print("Jump to " + str(self.reg[register]))
+                self.pc = self.reg[register]
+            '''
+        else:
+            print("Less-than and equal flags are false")
+            self.pc += 2
 
     def handle_IRET(self):
         # Return from an interupt handler.
