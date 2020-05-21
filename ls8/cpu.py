@@ -12,6 +12,7 @@ RET = 0b00010001
 CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
+JEQ = 0b01010101
 JLT = 0b01011000
 JLE = 0b01011001
 JGT = 0b01010111
@@ -62,6 +63,7 @@ class CPU:
         self.ops[CALL] = self.handle_CALL
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
+        self.ops[JEQ] = self.handle_JEQ
         self.ops[JLT] = self.handle_JLT
         self.ops[JLE] = self.handle_JLE
         self.ops[JGT] = self.handle_JGT
@@ -376,6 +378,13 @@ class CPU:
 
         # Set the PC to the address stored in the given register.
         self.pc = self.reg[register]
+
+    def handle_JEQ(self, register):
+        # If equal flag is set (true), jump to the address stored in the given register.
+        if self.fl & 0b00000001:
+            self.pc = self.reg[register]
+        else:
+            self.pc += 2
 
     def handle_JLT(self, register):
         # If less-than flag is set (true), jump to the address stored in the given register.
