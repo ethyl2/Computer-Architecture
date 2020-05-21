@@ -232,7 +232,7 @@ class CPU:
 
         elif op == 'NOT':
             # Perform a bitwise-NOT on the value in a register, storing the result in the register.
-            print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_a]))
             # One way:
             # self.reg[register_a] = (1 << 8) - 1 - self.reg[register_a]
             # Another way:
@@ -240,7 +240,7 @@ class CPU:
             # print('{0:08b}'.format(self.reg[register_a]))
             # Another way:
             self.reg[register_a] = int(bin(~self.reg[register_a] & 0xff), 2)
-            print('{0:08b}'.format(self.reg[register_a]))
+            # print('{0:08b}'.format(self.reg[register_a]))
 
         elif op == 'DEC':
             # Decrement (subtract 1 from) the value in the given register
@@ -327,12 +327,15 @@ class CPU:
         # Return from subroutine.
         # Pop the value from the top of the stack and store it in the PC.
         self.pc = self.ram_read(self.reg[self.sp])
+        # Increment the SP
+        self.reg[self.sp] += 1
 
     def handle_CALL(self, register):
         # Call a subroutine (function) at the address stored in the register.
 
         # Push the address of the instruction directly after CALL onto the stack.
-        self.reg[self.sp] += 1
+        # Increment the SP
+        self.reg[self.sp] -= 1
         # self.ram[self.reg[-1]] = pc + 2
         self.ram_write(self.pc + 2, self.reg[self.sp])
 
@@ -368,7 +371,7 @@ class CPU:
         self.reg[self.sp] += 1
         # print("back to address " + str(self.pc))
 
-        # Re-enable interrupts
+        # Re-enable interrupts # need to modify this to handle mult interrupts
         self.reg[5] = 1
         self.start_time = time.time()
 
@@ -438,7 +441,7 @@ class CPU:
                         self.ram_write(self.pc, self.reg[self.sp])
 
                         # Push the FL register on the stack.
-                        self.reg[-1] -= 1
+                        self.reg[self.sp] -= 1
                         self.ram_write(self.fl, self.reg[self.sp])
 
                         # Push RO-R6 on the stack
