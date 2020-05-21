@@ -338,7 +338,6 @@ class CPU:
 
     def handle_ST(self, register_a, register_b):
         # Store value in register_b in the address stored in register_a.
-
         # self.ram[self.reg[register_a]] = self.reg[register_b]
         self.ram_write(self.reg[register_b], self.reg[register_a])
 
