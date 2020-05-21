@@ -12,6 +12,7 @@ RET = 0b00010001
 CALL = 0b01010000
 ST = 0b10000100
 JMP = 0b01010100
+JLT = 0b01011000
 PRA = 0b01001000
 IRET = 0b00010011
 
@@ -30,6 +31,8 @@ XOR = 0b10101011
 SHR = 0b10101101
 SHL = 0b10101100
 NOT = 0b01101001
+
+CMP = 0b10100111
 
 
 class CPU:
@@ -57,6 +60,7 @@ class CPU:
         self.ops[CALL] = self.handle_CALL
         self.ops[ST] = self.handle_ST
         self.ops[JMP] = self.handle_JMP
+        self.ops[JLT] = self.handle_JLT
         self.ops[PRA] = self.handle_PRA
         self.ops[IRET] = self.handle_IRET
 
@@ -73,6 +77,7 @@ class CPU:
         self.ops[SHR] = self.alu
         self.ops[SHL] = self.alu
         self.ops[NOT] = self.alu
+        self.ops[CMP] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
@@ -88,6 +93,7 @@ class CPU:
         self.alu_ops[0b1100] = 'SHL'
         self.alu_ops[0b1001] = 'NOT'
         self.alu_ops[0b0101] = 'INC'
+        self.alu_ops[0b0111] = 'CMP'
 
         self.start_time = time.time()
 
@@ -250,6 +256,19 @@ class CPU:
             # Increment (add 1 to) the value in the given register
             self.reg[register_a] += 1
 
+        elif op == 'CMP':
+            # FL bits: 00000LGE
+            # Compare the values in two registers.
+            # If they are equal, set the Equal E flag to 1, otherwise set it to 0.
+            if self.reg[register_a] == self.reg[register_b]:
+                self.fl = 0b00000001
+            # If register_a is less than register_b, set the Less-than L flag to 1, otherwise set it to 0.
+            elif self.reg[register_a] < self.reg[register_b]:
+                self.fl = 0b00000100
+            # If register_a is greater than registerB, set the Greater-than G flag to 1, otherwise set it to 0.
+            elif self.reg[register_a] > self.reg[register_b]:
+                self.fl = 0b00000010
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -352,6 +371,13 @@ class CPU:
 
         # Set the PC to the address stored in the given register.
         self.pc = self.reg[register]
+
+    def handle_JLT(self, register):
+        # If less-than flag is set (true), jump to the address stored in the given register.
+        if self.fl >> 2:
+            print("Less-than flag is true")
+            print("Jump to " + str(self.reg[register]))
+            self.pc = self.reg[register]
 
     def handle_IRET(self):
         # Return from an interupt handler.
