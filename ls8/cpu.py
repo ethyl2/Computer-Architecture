@@ -266,7 +266,9 @@ class CPU:
 
         elif op == 'INC':
             # Increment (add 1 to) the value in the given register
+            # print('Value before INC: ', str(self.reg[register_a]))
             self.reg[register_a] += 1
+            # print('Value after INC: ', str(self.reg[register_a]))
 
         elif op == 'CMP':
             # FL bits: 00000LGE
@@ -280,7 +282,7 @@ class CPU:
             # If register_a is greater than registerB, set the Greater-than G flag to 1, otherwise set it to 0.
             elif self.reg[register_a] > self.reg[register_b]:
                 self.fl = 0b00000010
-            print('self.fl:' + '{0:08b}'.format(self.fl))
+            # print('self.fl:' + '{0:08b}'.format(self.fl))
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -407,6 +409,7 @@ class CPU:
             # print("Jump to " + str(self.reg[register]))
             self.pc = self.reg[register]
         else:
+            # print("Less than test failed")
             self.pc += 2
 
     def handle_JLE(self, register):
@@ -423,7 +426,7 @@ class CPU:
                 self.pc = self.reg[register]
             '''
         else:
-            print("Less-than and equal flags are false")
+            # print("Less-than and equal flags are false")
             self.pc += 2
 
     def handle_JGT(self, register):
