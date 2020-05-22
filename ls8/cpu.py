@@ -40,6 +40,8 @@ NOT = 0b01101001
 
 CMP = 0b10100111
 
+ADDI = 0b10101111
+
 
 class CPU:
     """Main CPU class."""
@@ -90,6 +92,7 @@ class CPU:
         self.ops[SHL] = self.alu
         self.ops[NOT] = self.alu
         self.ops[CMP] = self.alu
+        self.ops[ADDI] = self.alu
 
         self.alu_ops = {}
         self.alu_ops[0b0010] = 'MUL'
@@ -106,6 +109,7 @@ class CPU:
         self.alu_ops[0b1001] = 'NOT'
         self.alu_ops[0b0101] = 'INC'
         self.alu_ops[0b0111] = 'CMP'
+        self.alu_ops[0b1111] = 'ADDI'
 
         self.start_time = time.time()
 
@@ -283,6 +287,11 @@ class CPU:
             elif self.reg[register_a] > self.reg[register_b]:
                 self.fl = 0b00000010
             # print('self.fl:' + '{0:08b}'.format(self.fl))
+
+        elif op == 'ADDI':
+            # Add an immediate value to a register
+            immediate = register_b
+            self.reg[register_a] = self.reg[register_a] + immediate
 
         else:
             raise Exception("Unsupported ALU operation")
