@@ -1,0 +1,53 @@
+# --------------- Set up
+10000010 # LDI R0, 1 <- initial num of *s
+00000000 #  R0
+00000001 #  current num *s (starts as 1)
+10000010 # LDI R1, 1 <- initial num of desired *s
+00000001 #  R1
+00000001 #  current desired num *s (starts as 1)
+10000010 # LDI R2, 2 <- num to multiply by (2)
+00000010 #  R2
+00000010 #  num to multiply by (2)
+10000010 # LDI R3, 42 (ascii for *)
+00000011 #  R3
+00101010 #  42 (ascii for *)
+10000010 # LDI R4, [address of start of loop: the PRA *]
+00000100 #  R4
+00001111 #  [address of start of loop] (15)
+
+# --------------------
+01001000 # PRA R3 <- Loop starts here
+00000011 #  R3
+10000010 # LDI R2, 2 <- num to multiply by (2)
+00000010 #  R2
+00000010 #  num to multiply by (2)
+01100101 # INC R0 <- increment the number of asteriks
+00000000
+10100111 # CMP R0,R1
+00000000
+00000001
+01011001 # JLE R4 # Originally, JLT 
+00000100 # [R4 holds address to jump to]
+10000010 # LDI R0, 1 <- initial num of *s (Reset R0 back to 1)
+00000000 #  R0
+00000001 # 1
+10100010 # MUL R1,R2 (Increment R1)
+00000001
+00000010
+10000010 # LDI R3, 10 (ascii for \n)
+00000011 #  R3
+00001010 #  10 (ascii for \n)
+01001000 # PRA R3
+00000011 #  R3
+10000010 # LDI R3, 42 (ascii for *)
+00000011 #  R3
+00101010 #  42 (ascii for *)
+10000010 # LDI R2, 64 (Temporarily assign R2 to be 64, the absolute max num of *s we want on a line)
+00000010 #  R2
+01000000 #  64
+10100111 # CMP R1,R2 (See if desired num *s is <= than absolute max num *s)
+00000001
+00000010
+01011001 # JLE R4
+00000100 #  R4
+00000001 # HLT
